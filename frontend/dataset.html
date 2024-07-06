@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dataset</title>
+    <br>
+    <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+        .dataset-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .model-list {
+            list-style: none;
+            padding: 0;
+        }
+        .model-item {
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .model-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .data-count {
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="dataset-container">
+        <h2>Dataset List</h2>
+        <ul class="model-list">
+            <!-- JavaScript will populate this list -->
+        </ul>
+    </div>
+
+    <script>
+        // Function to fetch the dataset information and populate the list
+        async function fetchDataset() {
+            const response = await fetch('http://127.0.0.1:5000/dataset'); // Replace URL with your backend API endpoint
+            const data = await response.json();
+
+            const modelList = document.querySelector('.model-list');
+
+            // Loop through the data and create list items
+            data.forEach(model => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('model-item');
+
+                const modelName = document.createElement('div');
+                modelName.classList.add('model-name');
+                modelName.textContent = model.name;
+                listItem.appendChild(modelName);
+
+                const dataCount = document.createElement('div');
+                dataCount.classList.add('data-count');
+                dataCount.textContent = `Data Count: ${model.count}`;
+                listItem.appendChild(dataCount);
+
+                modelList.appendChild(listItem);
+            });
+        }
+
+        // Call the function when the page loads
+        window.addEventListener('load', fetchDataset);
+    </script>
+</body>
+</html>

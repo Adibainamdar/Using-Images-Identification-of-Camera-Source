@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Predict</title>
+    <!--===============================================================================================-->   
+    <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
+    <!--===============================================================================================-->   
+    <link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="vendor/animsition/css/animsition.min.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
+    <!--===============================================================================================-->   
+    <link rel="stylesheet" type="text/css" href="vendor/daterangepicker/daterangepicker.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="css/util.css">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <!--===============================================================================================-->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+
+        .limiter {
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .container-login100 {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .wrap-login100 {
+            width: 100%;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            padding: 77px 55px 33px 55px;
+            box-shadow: 0 5px 10px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        .wrap-login100-form-btn {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding-top: 13px;
+        }
+
+        .login100-form-btn {
+            font-family: Arial, sans-serif;
+            font-size: 15px;
+            color: #fff;
+            line-height: 1.2;
+            text-transform: uppercase;
+            background: #333;
+            padding: 15px 35px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+        }
+
+        .login100-form-btn:hover {
+            background: #555;
+        }
+
+        .login100-form-title {
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            color: #333;
+            line-height: 1.2;
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        #image-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #uploaded-image {
+            border-radius: 5px;
+        }
+
+        #noise-pattern {
+            display: none; /* Initially hide the noise pattern */
+            margin-top: 20px;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="limiter">
+        <div class="container-login100">
+            <h2 class="project-name">Source Camera Identification by Image Features</h2>
+            <div class="wrap-login100">
+                <form id="upload-form" enctype="multipart/form-data">
+                    <span class="login100-form-title" style="color: white; font-weight: bold;">Upload Image</span>
+                    <input type="file" name="image" id="image">
+                </form>
+                <div id="image-container" style="display:none;">
+                    <img id="uploaded-image" src="#" alt="Uploaded Image" width="300">
+                </div>
+                <div class="wrap-login100-form-btn">
+                    <button type="button" id="predict-btn" class="login100-form-btn" style="display:none;">Upload Image & Identify Source Camera</button>
+                </div>
+            
+                    <img id="noise-pattern" src="#" alt="Noise Pattern">
+          
+                <div id="prediction"></div>
+                <div id="confidence"></div>
+                <div id="loader"></div>
+                <!-- Noise pattern image -->
+               
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('predict-btn').addEventListener('click', function () {
+                var formData = new FormData();
+                formData.append('image', document.getElementById('image').files[0]);
+
+                document.getElementById('loader').style.display = 'block';
+    
+                fetch('http://127.0.0.1:5000/predict', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('prediction').innerText = 'Predicted class: ' + data.predicted_camera;
+                    // Display noise pattern image
+                    document.getElementById('noise-pattern').style.display = 'block';
+                    document.getElementById('noise-pattern').src = "C:\\Users\\ASUS\\OneDrive\\Desktop\\camera identification\\backend\\"+data.noise_pattern_path;
+                    document.getElementById('confidence').innerText = 'Accuracy: ' + (data.confidence * 100).toFixed(2) + '%';
+                    //document.getElementById('noise-pattern-container').style.display = 'block';
+                })
+                .catch(error => {
+                    document.getElementById('loader').style.display = 'none';
+                    console.error('Error:', error);
+                });
+            });
+    
+            document.getElementById('image').addEventListener('change', function () {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('uploaded-image').src = e.target.result;
+                    document.getElementById('image-container').style.display = 'block';
+                    document.getElementById('predict-btn').style.display = 'block';
+                    document.getElementById('prediction').innerText = '';
+                    // Hide noise pattern when a new image is selected
+                    document.getElementById('confidence').innerText = '';
+                    document.getElementById('noise-pattern').style.display = 'none';
+                }
+                reader.readAsDataURL(this.files[0]);
+            });
+        });
+    </script>
+    
+</body>
+</html>
